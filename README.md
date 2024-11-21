@@ -1,15 +1,5 @@
 # TWG AMP Related Posts
 
-**Contributors**: Deepanker Verma  
-**Tags**: AMP, related posts, amp-content, related-posts, custom AMP plugin, AMP related posts  
-**Requires at least**: 5.0  
-**Tested up to**: 6.1  
-**Requires PHP**: 7.0  
-**License**: GPL-2.0+  
-**License URI**: [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)  
-**Plugin URI**: [https://github.com/deepankerverma/twg-amp-related-posts](https://github.com/deepankerverma/twg-amp-related-posts)  
-**Author URI**: [https://github.com/deepankerverma](https://github.com/deepankerverma)
-
 ## Description
 
 **TWG AMP Related Posts** displays related posts on AMP pages with titles, images, and links for users to discover more content. This plugin integrates with AMP-enabled WordPress sites and ensures that related posts are only shown when viewing AMP content.
