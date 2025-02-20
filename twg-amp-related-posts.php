@@ -1,29 +1,99 @@
 <?php
 /**
  * Plugin Name: TWG AMP Related Posts
- * Description: Display related posts on AMP pages with images and titles.
- * Version: 1.0
+ * Description: Display related posts on AMP pages with images and titles. Includes settings for customization.
+ * Version: 1.1
  * Author: Deepanker Verma
+ * Author URI: https://thewpguides.com
+ * License: GPL2
+ * Text Domain: twg-amp-related-posts
  */
 
-// Enqueue inline CSS for AMP pages
+// Load Plugin Text Domain for Translations
+function twg_amp_related_posts_load_textdomain() {
+    load_plugin_textdomain('twg-amp-related-posts', false, dirname(plugin_basename(__FILE__)));
+}
+add_action('plugins_loaded', 'twg_amp_related_posts_load_textdomain');
+
+// Add Admin Settings Page
+function twg_amp_related_posts_menu() {
+    add_options_page(
+        __('TWG AMP Related Posts', 'twg-amp-related-posts'),
+        __('AMP Related Posts', 'twg-amp-related-posts'),
+        'manage_options',
+        'twg-amp-related-posts',
+        'twg_amp_related_posts_settings_page'
+    );
+}
+add_action('admin_menu', 'twg_amp_related_posts_menu');
+
+// Register Plugin Settings
+function twg_amp_related_posts_register_settings() {
+    register_setting('twg_amp_related_posts_options', 'twg_amp_related_posts_count', 'intval');
+    register_setting('twg_amp_related_posts_options', 'twg_amp_related_posts_orderby', 'sanitize_text_field');
+    register_setting('twg_amp_related_posts_options', 'twg_amp_related_posts_show_thumbnail', 'sanitize_text_field');
+
+    add_settings_section('twg_amp_related_posts_main_section', __('Settings', 'twg-amp-related-posts'), '__return_false', 'twg-amp-related-posts');
+
+    add_settings_field('twg_amp_related_posts_count', __('Number of Related Posts:', 'twg-amp-related-posts'), 'twg_amp_related_posts_count_field', 'twg-amp-related-posts', 'twg_amp_related_posts_main_section');
+    add_settings_field('twg_amp_related_posts_orderby', __('Order By:', 'twg-amp-related-posts'), 'twg_amp_related_posts_orderby_field', 'twg-amp-related-posts', 'twg_amp_related_posts_main_section');
+    add_settings_field('twg_amp_related_posts_show_thumbnail', __('Show Thumbnails:', 'twg-amp-related-posts'), 'twg_amp_related_posts_show_thumbnail_field', 'twg-amp-related-posts', 'twg_amp_related_posts_main_section');
+}
+add_action('admin_init', 'twg_amp_related_posts_register_settings');
+
+// Plugin Settings Page
+function twg_amp_related_posts_settings_page() {
+    ?>
+    <div class="wrap">
+        <h1><?php esc_html_e('TWG AMP Related Posts Settings', 'twg-amp-related-posts'); ?></h1>
+        <form method="post" action="options.php">
+            <?php
+            settings_fields('twg_amp_related_posts_options');
+            do_settings_sections('twg-amp-related-posts');
+            submit_button(__('Save Settings', 'twg-amp-related-posts'));
+            ?>
+        </form>
+    </div>
+    <?php
+}
+
+// Settings Fields
+function twg_amp_related_posts_count_field() {
+    $value = get_option('twg_amp_related_posts_count', 5);
+    echo '<input type="number" name="twg_amp_related_posts_count" value="' . esc_attr($value) . '" min="1">';
+}
+
+function twg_amp_related_posts_orderby_field() {
+    $value = get_option('twg_amp_related_posts_orderby', 'recent');
+    ?>
+    <select name="twg_amp_related_posts_orderby">
+        <option value="recent" <?php selected($value, 'recent'); ?>><?php esc_html_e('Recent', 'twg-amp-related-posts'); ?></option>
+        <option value="random" <?php selected($value, 'random'); ?>><?php esc_html_e('Random', 'twg-amp-related-posts'); ?></option>
+    </select>
+    <?php
+}
+
+function twg_amp_related_posts_show_thumbnail_field() {
+    $value = get_option('twg_amp_related_posts_show_thumbnail', 'yes');
+    ?>
+    <input type="checkbox" name="twg_amp_related_posts_show_thumbnail" value="yes" <?php checked($value, 'yes'); ?>>
+    <?php esc_html_e('Enable thumbnails', 'twg-amp-related-posts'); ?>
+    <?php
+}
+
+// Add CSS for AMP Pages
 function twg_amp_related_posts_inline_styles() {
     if (function_exists('is_amp_endpoint') && is_amp_endpoint()) {
-        // Inline CSS
         $css = "
             .twg-amp-related-posts {
                 margin-top: 30px;
                 padding: 10px;
                 border-top: 2px solid #ddd;
             }
-            
-            /* Title for related posts */
             .twg-amp-related-posts h3 {
                 font-size: 1.2em;
                 margin-bottom: 10px;
             }
-            
-            /* Each related post item */
             .related-post-item {
                 display: flex;
                 align-items: center;
@@ -33,100 +103,68 @@ function twg_amp_related_posts_inline_styles() {
                 border-radius: 5px;
                 background-color: #f9f9f9;
             }
-            
-            /* Image on the left */
             .related-post-image {
                 margin-right: 15px;
-                width: 75px;  /* You can adjust the size as per your preference */
-                height: 75px; /* Keep aspect ratio consistent */
+                width: 75px;
+                height: 75px;
             }
-            
-            /* Image styling */
-            .related-post-image img,
-            .related-post-image .amp-img {
-                max-width: 100%;
-                height: auto;
-                border-radius: 5px;
-            }
-            
-            /* Title on the right */
             .related-post-title {
                 flex-grow: 1;
             }
-            
             .related-post-title a {
                 color: #333;
                 text-decoration: none;
             }
-            
-            .related-post-title p {
-                font-size: 1em;
-                margin: 0;
-            }
-            
-            /* Hover effect for the link */
             .related-post-title a:hover {
                 color: #0073e6;
                 text-decoration: underline;
             }
         ";
-        
-        // Output the CSS in the <head> section
-        echo '<style amp-custom>' . $css . '</style>';
+        echo '<style amp-custom>' . esc_html($css) . '</style>';
     }
 }
-
 add_action('amp_post_template_head', 'twg_amp_related_posts_inline_styles');
 
-// Display related posts on AMP pages
+// Display Related Posts on AMP Pages
 function twg_amp_related_posts($content) {
     if (is_single() && function_exists('is_amp_endpoint') && is_amp_endpoint()) {
         global $post;
 
-        // Get related posts based on categories
+        $count = get_option('twg_amp_related_posts_count', 5);
+        $orderby = get_option('twg_amp_related_posts_orderby', 'recent') === 'random' ? 'rand' : 'date';
+        $show_thumbnail = get_option('twg_amp_related_posts_show_thumbnail', 'yes') === 'yes';
+
         $related_posts = get_posts(array(
             'category__in'   => wp_get_post_categories($post->ID),
             'post__not_in'   => array($post->ID),
-            'posts_per_page' => 5, // Number of related posts to display
+            'posts_per_page' => (int) $count,
+            'orderby'        => $orderby,
         ));
 
         if ($related_posts) {
-            $related_content = '<div class="twg-amp-related-posts">';
-            $related_content .= '<h3>' . esc_html__('Related Posts', 'twg-amp-related-posts') . '</h3>';
-            foreach ($related_posts as $related_post) {
-                $related_content .= '<div class="related-post-item">';
-                
-                // Image on the left
-                if (has_post_thumbnail($related_post->ID)) {
-                    $related_content .= '<div class="related-post-image">';
-                    $related_content .= get_the_post_thumbnail($related_post->ID, 'thumbnail', array('class' => 'amp-img'));
-                    $related_content .= '</div>';
-                } else {
-                    // Add a placeholder image if no thumbnail is available
-                    $placeholder_url = plugin_dir_url(__FILE__) . 'assets/placeholder.jpg';
-                    $related_content .= '<div class="related-post-image">';
-                    $related_content .= '<img src="' . esc_url($placeholder_url) . '" alt="No image" class="amp-img">';
-                    $related_content .= '</div>';
-                }
-                
-                // Title on the right
-                $related_content .= '<div class="related-post-title">';
-                $related_content .= '<a href="' . esc_url(get_permalink($related_post->ID)) . '">';
-                $related_content .= '<p><strong>' . esc_html($related_post->post_title) . '</strong></p>';
-                $related_content .= '</a>';
-                $related_content .= '</div>';
-
-                $related_content .= '</div>'; // Close related-post-item div
-            }
-            $related_content .= '</div>'; // Close twg-amp-related-posts div
-
-            // Append related posts to the content
-            $content .= $related_content;
+            ob_start();
+            ?>
+            <div class="twg-amp-related-posts">
+                <h3><?php esc_html_e('Related Posts', 'twg-amp-related-posts'); ?></h3>
+                <?php foreach ($related_posts as $related_post) : ?>
+                    <div class="related-post-item">
+                        <?php if ($show_thumbnail && has_post_thumbnail($related_post->ID)) : ?>
+                            <div class="related-post-image">
+                                <?php echo wp_get_attachment_image(get_post_thumbnail_id($related_post->ID), 'thumbnail', false, array('class' => 'amp-img')); ?>
+                            </div>
+                        <?php endif; ?>
+                        <div class="related-post-title">
+                            <a href="<?php echo esc_url(get_permalink($related_post->ID)); ?>">
+                                <p><strong><?php echo esc_html($related_post->post_title); ?></strong></p>
+                            </a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <?php
+            $content .= ob_get_clean();
         }
     }
-
     return $content;
 }
-
 add_filter('the_content', 'twg_amp_related_posts');
-?>
