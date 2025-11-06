@@ -38,7 +38,9 @@ Yes, you can replace the placeholder image located in the `/assets/placeholder.j
 
 ## Demo
 You can check these AMP URLs, where I am using the same plugin for addin related post.
+
 [https://techlomedia.in/2025/11/realme-gt-8-pro-launching-in-india-on-november-20-118079/amp/](https://techlomedia.in/2025/11/realme-gt-8-pro-launching-in-india-on-november-20-118079/amp/)
+
 [https://techlomedia.in/2025/11/motorola-edge-70-with-120hz-poled-display-and-ultra-slim-design-launched-117972/amp/](https://techlomedia.in/2025/11/motorola-edge-70-with-120hz-poled-display-and-ultra-slim-design-launched-117972/amp/)
 
 ## Changelog
